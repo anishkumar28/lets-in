@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 function Sidebar(){
     return(
         <aside
-         className="flex h-screen w-64 flex-col overflow-y-auto border-r bg-yellow-400 px-5 py-8 rounded-r-lg">
+         className="flex h-screen w-36 flex-col overflow-y-auto border-r bg-yellow-400 px-5 py-8 rounded-r-lg">
         <a href="#">
           <svg
             width="40"
