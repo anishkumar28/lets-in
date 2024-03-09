@@ -12,12 +12,10 @@ function App() {
     <>
     <Routes>
       <Route path='/' element={<Home />} />
-      <Route path='dashboard' element={<Sidebar />} />
-        <Route path='/board' element={<BoardSection/>}/>
-        <Route path='contacts' element={<ContactsSection/>}/>
-        <Route path='settings' element={<SettingsSection />}/>
-        <Route path='account' element={<AccountSection/>}/>
-  
+      <Route path='dashboard' exact element={<BoardSection/>}/>
+        <Route path='/contacts' exact element={<ContactsSection/>}/>
+        <Route path='/settings' exact element={<SettingsSection />}/>
+        <Route path='/accounts' exact element={<AccountSection/>}/>
     </Routes>
     </>
     
