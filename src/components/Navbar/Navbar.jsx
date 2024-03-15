@@ -1,5 +1,9 @@
 import Logo from "../../assets/logo_black.png"
 import { NavLink } from "react-router-dom";
+import {getAuth, signOut} from "firebase/auth";
+import {app} from "../Firebase";
+
+const auth = getAuth(app);
 
 
 function Navbar(){
@@ -26,12 +30,8 @@ function Navbar(){
                 About
                 </NavLink>
             </button>
-            <button className="pl-2 pr-2 pt-2 pb-2 hover:bg-black hover:text-white hover:rounded ">
-                <NavLink
-                to="/login">
-                Logout
-                </NavLink>
-            </button>
+            <button className="pl-2 pr-2 pt-2 pb-2 hover:bg-black hover:text-white hover:rounded "
+            onClick={() => signOut(auth)}>Logout</button>
         </div>
         </div>
     </nav>
