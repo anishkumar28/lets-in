@@ -17,6 +17,7 @@
     "@mui/material": "^5.15.7",
     "@mui/styled-engine-sc": "^6.0.0-alpha.14",
     "@types/react-swipeable-views": "^0.13.5",
+    "firebase": "^10.8.1",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
