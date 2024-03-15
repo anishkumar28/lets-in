@@ -1,5 +1,5 @@
 import React from "react";
-import HomeImage from "../../assets/loopcv-animation.gif"
+import BeachImage from "../../assets/Beach.jpg"
 import { Link } from "react-router-dom";
 import Navbar from "../Navbar/Navbar";
 
@@ -9,8 +9,8 @@ export default function Home(){
         <div className="flex flex-nowrap flex-col">
             <Navbar />
             <div className=" mt-8">
-            <div className="flex flex-wrap mt-4 mr-8 ml-8 justify-evenly">
-                <div className="flex flex-col flex-nowrap justify-between" >
+            <div className="flex flex-wrap mt-4 mr-8 ml-8 mb-4 justify-evenly">
+                <div className="flex flex-col flex-nowrap justify-around" >
                   <div>
                       <h1 className="mt-4 font-bold italic text-6xl" style={{fontFamily: "Medium"}}>Organize Your</h1>
                       <h1 className="mt-4 font-bold italic text-6xl" style={{fontFamily: "Medium"}}>Job Search</h1>
@@ -25,7 +25,7 @@ export default function Home(){
                     
                     </div>
                 <div className="p-4 justify-center">
-                    <img className="rounded h-64 w-70"src={HomeImage} alt="home-img" />
+                    <img className="w-[400px] h-full rounded "src={BeachImage} alt="home-img" />
                 </div>
             </div>
             </div>
