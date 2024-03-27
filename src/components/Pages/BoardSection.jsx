@@ -1,7 +1,7 @@
 import React from "react";
 import Sidebar from "../Sidebar/Sidebar";
 import Box from '@mui/material/Box';
-import ModalForm from "../../ModalForm"
+import Modalpopup from "../ModalPopup";
 
 
 
@@ -17,8 +17,7 @@ export default function BoardSection(){
           <Sidebar/>
           <Box marginTop={10} marginLeft={6}>
           <Box component="main" sx={{ flexGrow: 1}}>
-                 <ModalForm/> 
-                
+                <Modalpopup/>
           </Box>
         </Box>
         </Box>
