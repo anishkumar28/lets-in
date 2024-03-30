@@ -1,13 +1,11 @@
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, IconButton, Stack, Stepper, TextField } from "@mui/material";
 import FormControlContext from "@mui/material/FormControl/FormControlContext";
-import CloseIcon from "@mui/icons-material/Close"
 import { useState } from "react";
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import MenuItem from '@mui/material/MenuItem';
 import { TextareaAutosize as BaseTextareaAutosize } from '@mui/base/TextareaAutosize';
 import CoverLetter from "./FormComponents/CoverLetter";
-import HorizontalLinearStepper from "../components/HorizontalLinearStepper"
 
 const currencies = [
     {
@@ -87,45 +85,98 @@ const currencies = [
   );
 
 
+
 const Modalpopup = () => {
+
     const [open,openchange]=useState(false);
+
     const functionopenpopup=()=>{
         openchange(true);
     }
+
     const closepopup=()=>{
         openchange(false);
     }
+
+    const [cardData, setCardData ] = useState({
+      companyName:"",
+      jobTitle:"",
+      link:"",
+      location:"",
+      salary:"",
+      status:"",
+      jobDescription:"",
+      coverLetter:"",
+
+    });
+
+    let name, value;
+    const handleChange = (e) => {
+      name = e.target.name;
+      value = e.target.value;
+      
+      setCardData(cardData => ({
+        ...cardData,
+        [name]: [value],
+      }));
+    }
+
+    const submitForm = async (e) => {
+      e.preventDefault()
+
+      const {companyName, jobTitle, link, location, salary, status, jobDescription, coverLetter} = cardData;
+      const res = await fetch("https://lets-in-c3234-default-rtdb.firebaseio.com/testuser.json", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+      },
+        body: JSON.stringify(cardData),
+      });
+
+      const data = await res.json();
+      if(data.status === 422 ){
+        window.alert("Invalid details ");
+        console.log("Invalid details");
+      }else{
+        window.alert("Card created successfully");
+        console.log("Card created succesfully");
+        closepopup();
+      }
+    }
+
     return (
         <div style={{textAlign:'center'}}>
             <Button onClick={functionopenpopup} color="primary" variant="contained">Add</Button>
             <Dialog 
             // fullScreen 
             open={open} onClose={closepopup} fullWidth maxWidth="sm">
-                {/* <DialogTitle>User Registeration  <IconButton onClick={closepopup} style={{float:'right'}}><CloseIcon color="primary"></CloseIcon></IconButton>  </DialogTitle> */}
                 <DialogContent>
                     <Stack spacing={2} margin={4} marginTop={4}>
                     <DialogContentText color={"blue"}>Job Info Section</DialogContentText>
                         <div className="flex flex-row justify-between m-0 p-0">
-                            <TextField id="standard-basic" className="add-card-input" label="Company Name" variant="standard" required />
-                              <TextField id="standard-basic" className="add-card-input" label="Job Title" variant="standard" re/>
+                            <TextField id="standard-basic" className="add-card-input" name="companyName" value={cardData.companyName}  label="Company Name" onChange={handleChange} variant="standard" required  />
+                              <TextField id="standard-basic" className="add-card-input" name="jobTitle" value={cardData.jobTitle} label="Job Title" variant="standard" required onChange={handleChange}/>
                             </div>
 
                             <div className="flex flex-row justify-between m-0 p-0">
-                            <TextField id="standard-basic" className="add-card-input" label="Link" variant="standard" />
-                            <TextField id="standard-basic" className="add-card-input" label="Location" variant="standard" />
+                            <TextField id="standard-basic" className="add-card-input" name="link" value={cardData.link} label="Link" variant="standard" onChange={handleChange} />
+                            <TextField id="standard-basic" className="add-card-input" name="location" value={cardData.location} label="Location" variant="standard" onChange={handleChange} />
               
                             </div>
 
                             <div className="flex flex-row justify-between m-0 p-0">
-                            <TextField id="standard-basic" className="add-card-input" label="Salary" variant="standard" />
+                            <TextField id="standard-basic" className="add-card-input" name="salary" value={cardData.salary} label="Salary" variant="standard" onChange={handleChange} />
                             <TextField
                                 className="add-card-input"
                                 id="standard-select-currency"
                                 select
+                                name="status"
+                                value={cardData.status}
                                 label="Status"
                                 defaultValue="Applied"
                                 helperText="Current status of your application"
                                 variant="standard"
+                                onChange={handleChange}
                               >
                                 {currencies.map((option) => (
                                   <MenuItem key={option.value} value={option.value}>
@@ -139,9 +190,11 @@ const Modalpopup = () => {
                             <Textarea
                               minRows={12}
                               maxRows={12}
+                              name="jobDescription"
+                              value={cardData.jobDescription}
                               aria-label="maximum height"
                               placeholder="Job Description"
-                              defaultValue=""
+                              onChange={handleChange}
                             />
                           </Box>  
 
@@ -177,9 +230,11 @@ const Modalpopup = () => {
                             <Textarea
                               minRows={12}
                               maxRows={12}
+                              name="coverLetter"
+                              value={cardData.coverLetter}
                               aria-label="maximum height"
                               placeholder="Add cover letter"
-                              defaultValue=""
+                              onChange={handleChange}
                             />
                           </Box>
                     </Stack>
@@ -189,7 +244,7 @@ const Modalpopup = () => {
                 <DialogActions>
                 
                     <Button onClick={closepopup} color="error" variant="contained">CLOSE</Button>
-                    <Button color="primary" variant="contained">SAVE CARD</Button>
+                    <Button onClick={submitForm} color="primary" variant="contained" value="submit">SAVE CARD</Button>
                 </DialogActions>
             </Dialog>
         </div>
