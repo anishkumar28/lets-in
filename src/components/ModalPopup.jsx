@@ -1,11 +1,16 @@
 import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, FormControlLabel, IconButton, Stack, Stepper, TextField } from "@mui/material";
-import FormControlContext from "@mui/material/FormControl/FormControlContext";
 import { useState } from "react";
 import Box from '@mui/material/Box';
 import { styled } from '@mui/material/styles';
 import MenuItem from '@mui/material/MenuItem';
 import { TextareaAutosize as BaseTextareaAutosize } from '@mui/base/TextareaAutosize';
 import CoverLetter from "./FormComponents/CoverLetter";
+import { Toast } from "reactstrap";
+import {getDatabase, ref, set } from 'firebase/database';
+import {app} from "../components/Firebase.js";
+
+
+
 
 const currencies = [
     {
@@ -29,6 +34,7 @@ const currencies = [
       label: 'Rejected',
     },
   ];
+
 
   const blue = {
     100: '#DAECFF',
@@ -119,29 +125,17 @@ const Modalpopup = () => {
         ...cardData,
         [name]: [value],
       }));
-    }
+    } 
 
-    const submitForm = async (e) => {
-      e.preventDefault()
 
-      const {companyName, jobTitle, link, location, salary, status, jobDescription, coverLetter} = cardData;
-      const res = await fetch("https://lets-in-c3234-default-rtdb.firebaseio.com/testuser.json", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-      },
-        body: JSON.stringify(cardData),
-      });
+    const {companyName, jobTitle, link, location, salary, status, jobDescription, coverLetter} = cardData;
+    
 
-      const data = await res.json();
-      if(data.status === 422 ){
-        window.alert("Invalid details ");
-        console.log("Invalid details");
-      }else{
-        window.alert("Card created successfully");
-        console.log("Card created succesfully");
-        closepopup();
-      }
+    const submitForm = async(e) => {
+      e.preventDefault();
+      const db = getDatabase(app);
+      set(ref(db,'users'),{cardData});
+
     }
 
     return (
