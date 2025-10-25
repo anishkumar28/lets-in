@@ -1,0 +1,5 @@
+@font-face {
+  font-family: "Light";   
+  src: local("JustAnotherHand"),
+    url("./fonts/JustAnotherHand-Regular.ttf") format("truetype");
+}
