@@ -1,10 +1,10 @@
-import Logo from "../../assets/logo_black.png"
-import MyLogo from "../../assets/mylogo.png"
-import LetsInLogo from "../../assets/letsinlogo.png"
-import LetsLogo from "../../assets/letslogo.png"
+import Logo from "../../../assets/logo_black.png"
+import MyLogo from "../../../assets/mylogo.png"
+import LetsInLogo from "../../../assets/letsinlogo.png"
+import LetsLogo from "../../../assets/letslogo.png"
 import { NavLink } from "react-router-dom";
 import {getAuth, signOut} from "firebase/auth";
-import {app} from "../Firebase";
+import {app} from "../..//Database/Firebase";
 
 const auth = getAuth(app);
 

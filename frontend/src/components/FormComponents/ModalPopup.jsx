@@ -13,9 +13,11 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { TextareaAutosize as BaseTextareaAutosize } from "@mui/base/TextareaAutosize";
+import { Snackbar, Alert } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getDatabase, ref, push } from "firebase/database";
-import { app } from "../components/Firebase";
+import { app } from "../Database/Firebase";
+import AddIcon from "@mui/icons-material/Add";
 
 const currencies = [
   { value: "Wishlist", label: "Wishlist" },
@@ -81,15 +83,14 @@ const Modalpopup = () => {
     website: "",
   });
 
-  // 🟢 Tasks State
+  // 🟢 Tasks
   const [tasks, setTasks] = useState([]);
   const [taskInput, setTaskInput] = useState("");
 
-  // 🟢 Notes State
+  // 🟢 Notes
   const [notes, setNotes] = useState([]);
   const [noteInput, setNoteInput] = useState("");
 
-  // 🟢 Task Suggestions
   const taskSuggestions = [
     "Follow Up",
     "Phone Interview",
@@ -144,13 +145,34 @@ const Modalpopup = () => {
     setContacts((prev) => prev.filter((_, i) => i !== index));
   };
 
+
+  // Snackbar Notification
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const closeSnackbar = () => {
+    setSnackbar((prev) => ({ ...prev, open: false }));
+  };
+
+
   // 🟢 Add Task
   const addTask = () => {
     if (!taskInput.trim()) {
       alert("Please enter a task first.");
       return;
     }
-    setTasks((prev) => [...prev, taskInput]);
+    const newTask = {
+      text: taskInput,
+      createdAt: new Date().toISOString(),
+    };
+    setTasks((prev) => [...prev, newTask]);
     setTaskInput("");
   };
 
@@ -168,7 +190,11 @@ const Modalpopup = () => {
       alert("Please enter a note first.");
       return;
     }
-    setNotes((prev) => [...prev, noteInput]);
+    const newNote = {
+      text: noteInput,
+      createdAt: new Date().toISOString(),
+    };
+    setNotes((prev) => [...prev, newNote]);
     setNoteInput("");
   };
 
@@ -188,26 +214,35 @@ const Modalpopup = () => {
     }, {});
 
     const tasksObj = tasks.reduce((acc, task, index) => {
-      acc[`task_${index + 1}`] = { text: task };
+      acc[`task_${index + 1}`] = {
+        text: task.text,
+        createdAt: task.createdAt,
+      };
       return acc;
     }, {});
 
     const notesObj = notes.reduce((acc, note, index) => {
-      acc[`note_${index + 1}`] = { text: note };
+      acc[`note_${index + 1}`] = {
+        text: note.text,
+        createdAt: note.createdAt,
+      };
       return acc;
     }, {});
+
+    const timenow = new Date().toISOString();
 
     const payload = {
       ...cardData,
       contacts: contactsObj,
       tasks: tasksObj,
       notes: notesObj,
-      createdAt: new Date().toISOString(),
+      createdAt: timenow,
+      updatedAt: timenow,
     };
 
     await push(usersRef, payload);
 
-    // Reset form
+    // Reset all fields
     setCardData({
       companyName: "",
       jobTitle: "",
@@ -224,18 +259,19 @@ const Modalpopup = () => {
     closepopup();
   };
 
-
   return (
     <div style={{ textAlign: "center" }}>
       <Button onClick={functionopenpopup} color="primary" variant="contained">
-        Add
+        <AddIcon />
       </Button>
 
       <Dialog open={open} onClose={closepopup} fullWidth maxWidth="sm">
         <DialogContent>
           {/* JOB INFO SECTION */}
           <Stack spacing={2} margin={4}>
-            <DialogContentText color={"blue"}>Job Info Section</DialogContentText>
+            <DialogContentText color={"blue"}>
+              Job Info Section
+            </DialogContentText>
 
             <div className="flex flex-row justify-between">
               <TextField
@@ -263,6 +299,7 @@ const Modalpopup = () => {
                 variant="standard"
                 value={cardData.link}
                 onChange={handleChange}
+              required
               />
               <TextField
                 name="location"
@@ -270,16 +307,18 @@ const Modalpopup = () => {
                 variant="standard"
                 value={cardData.location}
                 onChange={handleChange}
+              required
               />
             </div>
 
-            <div className="flex flex-row justify-between">
+            <div className="flex flex-row gap-20 items-center">
               <TextField
                 name="salary"
                 label="Salary"
                 variant="standard"
                 value={cardData.salary}
                 onChange={handleChange}
+              required
               />
               <TextField
                 select
@@ -289,6 +328,9 @@ const Modalpopup = () => {
                 onChange={handleChange}
                 variant="standard"
                 helperText="Current status"
+                sx={{ flex: 1 }}
+                InputLabelProps={{ shrink: !!cardData.status }}
+                required
               >
                 {currencies.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
@@ -304,12 +346,15 @@ const Modalpopup = () => {
               name="jobDescription"
               value={cardData.jobDescription}
               onChange={handleChange}
+            required
             />
           </Stack>
 
           {/* CONTACT SECTION */}
           <Stack spacing={2} margin={4}>
-            <DialogContentText color={"blue"}>Contacts Section</DialogContentText>
+            <DialogContentText color={"blue"}>
+              Contacts Section
+            </DialogContentText>
 
             <div className="flex flex-row justify-between">
               <TextField
@@ -386,7 +431,9 @@ const Modalpopup = () => {
 
             {contacts.length > 0 && (
               <Box sx={{ mt: 2 }}>
-                <DialogContentText color="gray">Draft Contacts</DialogContentText>
+                <DialogContentText color="gray">
+                  Draft Contacts
+                </DialogContentText>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {contacts.map((c, i) => (
                     <Box
@@ -403,7 +450,8 @@ const Modalpopup = () => {
                       <div>
                         <strong>{c.fullName || c.emailAddress || "No name"}</strong>
                         <div style={{ fontSize: 13, color: "#666" }}>
-                          {c.phoneNumber || ""} {c.emailAddress && ` • ${c.emailAddress}`}
+                          {c.phoneNumber || ""}{" "}
+                          {c.emailAddress && ` • ${c.emailAddress}`}
                         </div>
                       </div>
                       <IconButton size="small" onClick={() => removeContact(i)}>
@@ -434,7 +482,7 @@ const Modalpopup = () => {
                 sx={{ ml: 2 }}
                 onClick={addTask}
               >
-                Add Task
+                Add
               </Button>
             </div>
 
@@ -474,7 +522,12 @@ const Modalpopup = () => {
                         p: 1,
                       }}
                     >
-                      <span>{task}</span>
+                      <div>
+                        <strong>{task.text}</strong>
+                        <div style={{ fontSize: 12, color: "#888" }}>
+                          {new Date(task.createdAt).toLocaleString()}
+                        </div>
+                      </div>
                       <IconButton size="small" onClick={() => removeTask(i)}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
@@ -497,7 +550,7 @@ const Modalpopup = () => {
             />
           </Stack>
 
-          {/* 🟢 NOTES SECTION */}
+          {/* NOTES SECTION */}
           <Stack spacing={2} margin={4}>
             <DialogContentText color={"blue"}>Notes Section</DialogContentText>
 
@@ -515,7 +568,7 @@ const Modalpopup = () => {
                 sx={{ ml: 2 }}
                 onClick={addNote}
               >
-                Add Note
+                Add
               </Button>
             </div>
 
@@ -535,7 +588,12 @@ const Modalpopup = () => {
                         p: 1,
                       }}
                     >
-                      <span>{note}</span>
+                      <div>
+                        <strong>{note.text}</strong>
+                        <div style={{ fontSize: 12, color: "#888" }}>
+                          {new Date(note.createdAt).toLocaleString()}
+                        </div>
+                      </div>
                       <IconButton size="small" onClick={() => removeNote(i)}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
@@ -549,13 +607,31 @@ const Modalpopup = () => {
 
         <DialogActions>
           <Button onClick={closepopup} color="error" variant="contained">
-            CLOSE
+            Close
           </Button>
           <Button onClick={submitForm} color="primary" variant="contained">
-            SAVE CARD
+            Save
           </Button>
         </DialogActions>
       </Dialog>
+
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={closeSnackbar}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={closeSnackbar}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
     </div>
   );
 };

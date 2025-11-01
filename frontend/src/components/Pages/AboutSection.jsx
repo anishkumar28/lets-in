@@ -5,7 +5,7 @@ import Paper from "@mui/material/Paper";
 import Divider from "@mui/material/Divider";
 import { List, ListItem, ListItemIcon, ListItemText } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import Navbar from "../Navbar/Navbar"; // ✅ Navbar import
+import Navbar from "../FormComponents/Navbar/Navbar"; // ✅ Navbar import
 import JobIllus from "../../assets/JobIllus.jpeg";
 import JobSearchImage from "../../assets/Jobsearch.jpeg";
 

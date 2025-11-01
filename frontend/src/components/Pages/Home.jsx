@@ -1,7 +1,7 @@
 import React from "react";
 import BeachImage from "../../assets/Beach.jpg"
 import { Link } from "react-router-dom";
-import Navbar from "../Navbar/Navbar";
+import Navbar from "../FormComponents/Navbar/Navbar";
 
 
 export default function Home(){

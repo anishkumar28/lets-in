@@ -18,14 +18,15 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import ConnectWithoutContactIcon from '@mui/icons-material/ConnectWithoutContact';
-import ListIcon from '@mui/icons-material/List';
-import NotesIcon from '@mui/icons-material/Notes';
+import ListIcon from '@mui/icons-material/ListAlt';
+import NotesIcon from '@mui/icons-material/EditNote';
+import ChecklistIcon from '@mui/icons-material/Checklist';
 import AccountBoxIcon from '@mui/icons-material/AccountBox';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import Logo from "../../assets/logo_black.png"
-import LetsLogo from "../../assets/letslogo.png"
-import LetsInLogo from "../../assets/letsinlogo.png"
+import Logo from "../../../assets/logo_black.png"
+import LetsLogo from "../../../assets/letslogo.png"
+import LetsInLogo from "../../../assets/letsinlogo.png"
 
 const drawerWidth = 240;
 
@@ -212,27 +213,6 @@ export default function Sidebar() {
             </ListItemButton>
           </ListItem>
 
-          <ListItem disablePadding sx={{ display: 'block' }} onClick={()=>(navigate('/settings'))}>
-            <ListItemButton
-              sx={{
-                minHeight: 68,
-                justifyContent: open ? 'initial' : 'center',
-                px: 2.5,
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: open ? 3 : 'auto',
-                  justifyContent: 'center',
-                }}
-              >
-               <SettingsOutlinedIcon />
-              </ListItemIcon>
-              <ListItemText primary="Settings" sx={{ opacity: open ? 1 : 0 }} />
-            </ListItemButton>
-          </ListItem>
-
           <ListItem disablePadding sx={{ display: 'block' }} onClick={()=>(navigate('/accounts'))}>
             <ListItemButton
               sx={{
@@ -254,6 +234,29 @@ export default function Sidebar() {
             </ListItemButton>
           </ListItem>
 
+ <ListItem disablePadding sx={{ display: 'block' }} onClick={()=>(navigate('/settings'))}>
+  <ListItemButton
+    sx={{
+      minHeight: 68,
+      justifyContent: open ? 'initial' : 'center',
+      px: 2.5,
+    }}
+  >
+    <ListItemIcon
+      sx={{
+        minWidth: 0,
+        mr: open ? 3 : 'auto',
+        justifyContent: 'center',
+      }}
+    >
+     <SettingsOutlinedIcon />
+    </ListItemIcon>
+    <ListItemText primary="Settings" sx={{ opacity: open ? 1 : 0 }} />
+  </ListItemButton>
+</ListItem>
+
+
+{/* 
           <ListItem disablePadding sx={{ display: 'block' }} onClick={()=>(navigate('/logout'))}>
             <ListItemButton
               sx={{
@@ -273,7 +276,7 @@ export default function Sidebar() {
               </ListItemIcon>
               <ListItemText primary="Logut" sx={{ opacity: open ? 1 : 0 }} />
             </ListItemButton>
-          </ListItem>
+          </ListItem> */}
 
         </List>
       </Drawer>

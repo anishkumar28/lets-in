@@ -1,8 +1,8 @@
 import React from 'react';
 import { PropagateLoader } from 'react-spinners';
-import loadingGif from '../../assets/preloader.gif';
-import preLoadGif from '../../assets/prelets.gif';
-import bg from "../../assets/loaderbg.jpg"
+import loadingGif from '../../../assets/preloader.gif';
+import preLoadGif from '../../../assets/prelets.gif';
+import bg from "../../../assets/loaderbg.jpg"
 
 const Loading = () => {
   return (

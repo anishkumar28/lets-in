@@ -1,9 +1,9 @@
 import React from "react";
-import Google from "../../assets/google.svg"
-import BusinessLadyImage from "../../assets/business-lady.png"
+import Google from "../../../assets/google.svg"
+import BusinessLadyImage from "../../../assets/business-lady.png"
 import { Link } from "react-router-dom";
-import usePasswordToggle from "../usePasswordToggle";
-import {app} from "../Firebase"
+import usePasswordToggle from "../../FormComponents/usePasswordToggle";
+import {app} from "../../Database/Firebase"
 import {createUserWithEmailAndPassword, getAuth} from "firebase/auth"
 import { useState } from "react";
 
@@ -89,19 +89,19 @@ function SignUp(){
             <button
               className="w-full border border-gray-300 text-md p-2 rounded-lg mb-6 hover:bg-black hover:text-white"
             >
-              <img src={Google} alt="img" class="w-6 h-6 inline mr-2" />
+              <img src={Google} alt="img" className="w-6 h-6 inline mr-2" />
               Sign Up with Google
             </button>
             <div className="text-center text-gray-400">
               Already have an account?
               <Link to="/login">
-               <span class="font-bold text-black ml-1">Log In</span>
+               <span className="font-bold text-black ml-1">Log In</span>
               </Link>
             </div>
           </div>
 
           {/* right side */} 
-          <div class="relative">
+          <div className="relative">
             <img
               src={BusinessLadyImage}
               alt="img"

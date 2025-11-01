@@ -1,23 +1,40 @@
 import React, { useEffect, useState } from "react";
-import Sidebar from "../Sidebar/Sidebar";
+import Sidebar from "../FormComponents/Sidebar/Sidebar";
 import Box from "@mui/material/Box";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  Divider,
   TextField,
   Button,
   Tooltip,
+  Avatar,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { getDatabase, ref, onValue, update, remove } from "firebase/database";
-import { app } from "../Firebase";
-import { Mail, Phone, User, Building2, Globe, Linkedin } from "lucide-react";
+import { app } from "../Database/Firebase";
+import {
+  Mail,
+  Phone,
+  Building2,
+  Globe,
+  Linkedin,
+} from "lucide-react";
 
 export default function ContactsSection() {
   const [contacts, setContacts] = useState([]);
   const [selectedContact, setSelectedContact] = useState(null);
   const [open, setOpen] = useState(false);
+
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info", // "success" | "error" | "warning" | "info"
+  });
 
   const db = getDatabase(app);
 
@@ -28,7 +45,6 @@ export default function ContactsSection() {
       const data = snapshot.val();
       if (data) {
         const contactList = [];
-
         Object.entries(data).forEach(([companyKey, companyData]) => {
           if (companyData.contacts) {
             Object.entries(companyData.contacts).forEach(
@@ -48,7 +64,6 @@ export default function ContactsSection() {
             );
           }
         });
-
         setContacts(contactList);
       } else {
         setContacts([]);
@@ -66,8 +81,14 @@ export default function ContactsSection() {
     setOpen(false);
   };
 
+  const showNotification = (message, severity = "info") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
   const handleUpdate = () => {
     if (!selectedContact) return;
+
+    showNotification("Updating contact...", "info");
 
     const contactRef = ref(
       db,
@@ -83,14 +104,19 @@ export default function ContactsSection() {
       companyWebsite: selectedContact.companyWebsite,
     })
       .then(() => {
-        alert("✅ Contact updated successfully");
+        showNotification("✅ Contact updated successfully!", "success");
         handleClose();
       })
-      .catch((error) => console.error("Error updating contact:", error));
+      .catch((error) => {
+        console.error("Error updating contact:", error);
+        showNotification("❌ Failed to update contact.", "error");
+      });
   };
 
   const handleDelete = () => {
     if (!selectedContact) return;
+
+    showNotification("Deleting contact...", "warning");
 
     const contactRef = ref(
       db,
@@ -99,59 +125,89 @@ export default function ContactsSection() {
 
     remove(contactRef)
       .then(() => {
-        alert("❌ Contact deleted");
+        showNotification("❌ Contact deleted successfully!", "error");
         handleClose();
       })
-      .catch((error) => console.error("Error deleting contact:", error));
+      .catch((error) => {
+        console.error("Error deleting contact:", error);
+        showNotification("Failed to delete contact.", "error");
+      });
   };
 
   return (
+     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 p-8 pt-20">
     <Box sx={{ display: "flex" }}>
       <Sidebar />
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <h2 className="text-2xl font-bold mb-6 text-gray-800">All Contacts</h2>
+
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 4,
+          bgcolor: "#f5f7fb",
+          minHeight: "100vh",
+        }}
+      >
+        <h2 className="text-3xl font-semibold mb-8 text-gray-800">
+          Contacts
+        </h2>
+
+        <Divider sx={{ mb: 3, borderColor: "#cbd5e1", borderBottomWidth: 2 }} />
 
         {contacts.length === 0 ? (
-          <p className="text-gray-500 text-center mt-8">No contacts found.</p>
+          <p className="text-gray-500 text-center mt-10 text-lg">
+            No contacts found.
+          </p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {contacts.map((contact) => (
               <div
                 key={contact.id}
                 onClick={() => handleOpen(contact)}
-                className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md cursor-pointer 
-                           transition-all duration-200 flex flex-col justify-between p-3 aspect-square min-h-[170px] max-w-[220px]"
+                className="bg-white/80 backdrop-blur-lg border border-gray-200 rounded-2xl shadow-sm hover:shadow-xl hover:border-blue-200 
+                           transition-all duration-300 p-5 cursor-pointer flex flex-col items-center text-center"
               >
-                {/* Company Name */}
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Building2 className="w-4 h-4 text-gray-500" />
-                  <span className="text-xs font-semibold text-gray-600 uppercase truncate">
-                    {contact.companyName}
-                  </span>
-                </div>
+                <Avatar
+                  sx={{
+                    bgcolor: "#2563eb",
+                    width: 64,
+                    height: 64,
+                    mb: 2,
+                    fontSize: "1.3rem",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {contact.fullName
+                    ? contact.fullName[0]
+                    : contact.companyName[0]}
+                </Avatar>
 
-                {/* Contact Name */}
-                <h3 className="text-sm font-semibold text-gray-800 truncate mb-0.5">
+                <h3 className="text-base font-semibold text-gray-800 mb-1 truncate">
                   {contact.fullName || "Unnamed Contact"}
                 </h3>
 
-                {/* Job Title */}
                 {contact.jobTitle && (
-                  <p className="text-xs text-gray-500 mb-2 truncate">
+                  <p className="text-sm text-gray-500 mb-1 truncate">
                     {contact.jobTitle}
                   </p>
                 )}
 
-                {/* Action Icons */}
-                <div className="flex flex-wrap gap-2 mt-auto pt-2 border-t border-gray-100 justify-start">
+                <div className="flex items-center justify-center gap-1 text-gray-600 text-sm mb-3">
+                  <Building2 className="w-4 h-4 text-blue-500" />
+                  <span className="truncate max-w-[140px]">
+                    {contact.companyName}
+                  </span>
+                </div>
+
+                <div className="flex gap-3 mt-auto pt-2 border-t border-gray-100">
                   {contact.phone && (
                     <Tooltip title={contact.phone} arrow>
                       <a
                         href={`tel:${contact.phone}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="text-green-600 hover:scale-110 transition-transform"
+                        className="text-green-600 hover:text-green-700 hover:scale-110 transition-transform"
                       >
-                        <Phone className="w-4 h-4" />
+                        <Phone className="w-5 h-5" />
                       </a>
                     </Tooltip>
                   )}
@@ -160,9 +216,9 @@ export default function ContactsSection() {
                       <a
                         href={`mailto:${contact.email}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="text-blue-600 hover:scale-110 transition-transform"
+                        className="text-blue-600 hover:text-blue-700 hover:scale-110 transition-transform"
                       >
-                        <Mail className="w-4 h-4" />
+                        <Mail className="w-5 h-5" />
                       </a>
                     </Tooltip>
                   )}
@@ -173,9 +229,9 @@ export default function ContactsSection() {
                         target="_blank"
                         rel="noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="text-sky-700 hover:scale-110 transition-transform"
+                        className="text-sky-600 hover:text-sky-700 hover:scale-110 transition-transform"
                       >
-                        <Linkedin className="w-4 h-4" />
+                        <Linkedin className="w-5 h-5" />
                       </a>
                     </Tooltip>
                   )}
@@ -186,9 +242,9 @@ export default function ContactsSection() {
                         target="_blank"
                         rel="noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="text-indigo-600 hover:scale-110 transition-transform"
+                        className="text-indigo-600 hover:text-indigo-700 hover:scale-110 transition-transform"
                       >
-                        <Globe className="w-4 h-4" />
+                        <Globe className="w-5 h-5" />
                       </a>
                     </Tooltip>
                   )}
@@ -265,8 +321,6 @@ export default function ContactsSection() {
                   })
                 }
               />
-
-              {/* LinkedIn Field */}
               <div className="flex items-center gap-2">
                 <span className="text-gray-600 text-sm font-medium whitespace-nowrap">
                   linkedin.com/in/
@@ -284,7 +338,6 @@ export default function ContactsSection() {
                   }
                 />
               </div>
-
               <TextField
                 label="Company Website"
                 fullWidth
@@ -297,7 +350,6 @@ export default function ContactsSection() {
                   })
                 }
               />
-
               <TextField
                 label="Company"
                 fullWidth
@@ -318,7 +370,28 @@ export default function ContactsSection() {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Snackbar Notification */}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert
+            severity={snackbar.severity}
+            onClose={() => setSnackbar({ ...snackbar, open: false })}
+            sx={{
+              width: "100%",
+              boxShadow: 3,
+              borderRadius: "8px",
+            }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </Box>
+    </div>
   );
 }

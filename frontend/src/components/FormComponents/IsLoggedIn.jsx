@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import {app} from "./Firebase"
-import LogIn from "./Pages/LogIn";
-import Home from "./Pages/Home";
+import {app} from "../Database/Firebase"
+import LogIn from "../Pages/Auth/LogIn";
+import Home from "../Pages/Home";
 
 const auth = getAuth(app);
 

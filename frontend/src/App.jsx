@@ -6,49 +6,114 @@ import ContactsSection from "./components/Pages/ContactsSection.jsx";
 import SettingsSection from "./components/Pages/SettingsSection.jsx";
 import AccountSection from "./components/Pages/AccountsSection.jsx";
 import AboutSection from "./components/Pages/AboutSection.jsx";
-import SignUp from "./components/Pages/SignUp.jsx";
-import LogIn from "./components/Pages/LogIn.jsx";
-import Logout from './components/Pages/Logout.jsx';
-import Todo from './components/FormComponents/ToDo.jsx';
-import Notes from './components/FormComponents/Notes.jsx';
-import IsLoggedIn from "./components/isLoggedIn.jsx";
-import Loading from "./components/Loading/Loading.jsx";
-import ErrorPage from "./components/Pages/ErrorPage.jsx";
+import SignUp from "./components/Pages/Auth/SignUp.jsx";
+import LogIn from "./components/Pages/Auth/LogIn.jsx";
+import Todo from "./components/Pages/ToDoSection.jsx";
+import Notes from "./components/Pages/NotesSection.jsx";
+import IsLoggedIn from "./components/FormComponents/IsLoggedIn.jsx";
+import Loading from "./components/FormComponents/Loading/Loading.jsx";
+import ErrorPage from "./components/FormComponents/ErrorPage.jsx";
+import ProtectedRoute from "./Routes/ProtectedRoute.jsx";
+import PublicRoute from "./Routes/PublicRoute.jsx";
 
 function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Option 1: Use timer (simulate load)
     const timer = setTimeout(() => setLoading(false), 2000);
-
-    // Option 2 (recommended): Wait until all assets are loaded
-    // window.addEventListener("load", () => setLoading(false));
-
     return () => clearTimeout(timer);
   }, []);
 
-  if (loading) {
-    return <Loading />; // ✅ show your preloader
-  }
+  if (loading) return <Loading />;
 
   return (
-    <>
-      <Routes>
-        <Route path="/" element={<IsLoggedIn />} />
-        <Route path="/dashboard" element={<BoardSection />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/login" element={<LogIn />} />
-        <Route path="/login" element={<LogIn />} />
-        <Route path='/todo' element={<Todo />} />
-        <Route path='/notes' element={<Notes />} />
-        <Route path="/about" element={<AboutSection />} />
-        <Route path="/contacts" element={<ContactsSection />} />
-        <Route path="/settings" element={<SettingsSection />} />
-        <Route path="/accounts" element={<AccountSection />} />
-        <Route path="*" element={<ErrorPage />} />
-      </Routes>
-    </>
+    <Routes>
+      {/* Public Routes */}
+      <Route
+        path="/signup"
+        element={
+          <PublicRoute>
+            <SignUp />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <PublicRoute>
+            <LogIn />
+          </PublicRoute>
+        }
+      />
+
+      {/* Protected Routes */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <IsLoggedIn />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <BoardSection />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/todo"
+        element={
+          <ProtectedRoute>
+            <Todo />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/notes"
+        element={
+          <ProtectedRoute>
+            <Notes />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/about"
+        element={
+          <ProtectedRoute>
+            <AboutSection />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/contacts"
+        element={
+          <ProtectedRoute>
+            <ContactsSection />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <SettingsSection />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accounts"
+        element={
+          <ProtectedRoute>
+            <AccountSection />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="*" element={<ErrorPage />} />
+    </Routes>
   );
 }
 
