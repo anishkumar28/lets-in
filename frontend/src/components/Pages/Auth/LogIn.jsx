@@ -47,7 +47,7 @@ function LogIn() {
       .catch((error) => {
         setSnackbar({
           open: true,
-          message: error.message || "Login failed. Please try again.",
+          message: "Login failed. Please try again.",
           severity: "error",
         });
       });
