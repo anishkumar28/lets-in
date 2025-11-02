@@ -16,6 +16,7 @@ import { TextareaAutosize as BaseTextareaAutosize } from "@mui/base/TextareaAuto
 import { Snackbar, Alert } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getDatabase, ref, push } from "firebase/database";
+import { getAuth } from "firebase/auth";
 import { app } from "../Database/Firebase";
 import AddIcon from "@mui/icons-material/Add";
 
@@ -204,8 +205,18 @@ const Modalpopup = () => {
 
   const submitForm = async (e) => {
     e.preventDefault();
+
     const db = getDatabase(app);
-    const usersRef = ref(db, "users");
+    const auth = getAuth(app); // 🟢 Get Firebase Auth
+    const user = auth.currentUser;
+
+    if (!user) {
+      alert("User not logged in!");
+      return;
+    }
+
+    const userId = user.uid;
+    const userJobsRef = ref(db, `users/${userId}/jobs`); // 🟢 Save under user’s UID
 
     // Convert arrays into objects with unique keys
     const contactsObj = contacts.reduce((acc, item, index) => {
@@ -240,7 +251,7 @@ const Modalpopup = () => {
       updatedAt: timenow,
     };
 
-    await push(usersRef, payload);
+    await push(userJobsRef, payload); // 🟢 Push to user-specific node
 
     // Reset all fields
     setCardData({
@@ -257,7 +268,10 @@ const Modalpopup = () => {
     setTasks([]);
     setNotes([]);
     closepopup();
+
+    showSnackbar("Job added successfully!", "success"); // 🟢 Optional feedback
   };
+
 
   return (
     <div style={{ textAlign: "center" }}>

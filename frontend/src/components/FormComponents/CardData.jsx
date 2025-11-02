@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { getDatabase, ref, onValue, remove } from "firebase/database";
 import { app } from "../Database/Firebase";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Modalpopup from "./ModalPopup";
 import EditModal from "./EditModal";
 import {
@@ -29,16 +30,33 @@ const ContentList = () => {
   const [selectedKey, setSelectedKey] = useState(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState({ open: false, key: null });
-  const [notification, setNotification] = useState({ open: false, message: "", type: "" });
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+    type: "",
+  });
+  const [userId, setUserId] = useState(null);
 
-  // 🔹 Fetch data
+  // 🔹 Fetch data only for current user
   useEffect(() => {
     const db = getDatabase(app);
-    const cardRef = ref(db, "users");
-    onValue(cardRef, (snapshot) => {
-      const retrievedData = snapshot.val();
-      setCardData(retrievedData);
+    const auth = getAuth(app);
+
+    const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
+        const cardRef = ref(db, `users/${user.uid}/jobs`);
+        onValue(cardRef, (snapshot) => {
+          const retrievedData = snapshot.val();
+          setCardData(retrievedData);
+        });
+      } else {
+        setUserId(null);
+        setCardData(null);
+      }
     });
+
+    return () => unsubscribeAuth();
   }, []);
 
   // 🔹 Format date
@@ -57,8 +75,10 @@ const ContentList = () => {
   };
 
   const confirmDeleteAction = () => {
+    if (!userId) return;
+
     const db = getDatabase(app);
-    const cardRef = ref(db, "users/" + confirmDelete.key);
+    const cardRef = ref(db, `users/${userId}/jobs/${confirmDelete.key}`);
     remove(cardRef)
       .then(() => {
         setNotification({
@@ -235,7 +255,8 @@ const ContentList = () => {
         <DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this record? This action cannot be undone.
+            Are you sure you want to delete this record? This action cannot be
+            undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+// EditModal.jsx
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Dialog,
@@ -10,11 +11,14 @@ import {
   TextField,
   MenuItem,
   Box,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { TextareaAutosize as BaseTextareaAutosize } from "@mui/base/TextareaAutosize";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { getDatabase, ref, update } from "firebase/database";
+import { getAuth } from "firebase/auth";
 import { app } from "../Database/Firebase";
 import EditIcon from "@mui/icons-material/Edit";
 
@@ -77,6 +81,18 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
   const [taskInput, setTaskInput] = useState("");
   const [notes, setNotes] = useState([]);
   const [noteInput, setNoteInput] = useState("");
+
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+  const closeSnackbar = () => setSnackbar((s) => ({ ...s, open: false }));
 
   const taskSuggestions = [
     "Follow Up",
@@ -153,7 +169,7 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
 
   const addContact = () => {
     if (!contactInput.fullName && !contactInput.phoneNumber) {
-      alert("Please enter contact name or phone number before adding.");
+      showSnackbar("Please enter contact name or phone number before adding.", "warning");
       return;
     }
     setContacts((prev) => [...prev, contactInput]);
@@ -165,6 +181,7 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
       linkedin: "",
       website: "",
     });
+    showSnackbar("Contact added to draft.", "success");
   };
 
   const removeContact = (index) => {
@@ -173,12 +190,13 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
 
   const addTask = () => {
     if (!taskInput.trim()) {
-      alert("Please enter a task first.");
+      showSnackbar("Please enter a task first.", "warning");
       return;
     }
     const newTask = { text: taskInput, createdAt: new Date().toISOString() };
     setTasks((prev) => [...prev, newTask]);
     setTaskInput("");
+    showSnackbar("Task added to draft.", "success");
   };
 
   const removeTask = (index) => {
@@ -189,12 +207,13 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
 
   const addNote = () => {
     if (!noteInput.trim()) {
-      alert("Please enter a note first.");
+      showSnackbar("Please enter a note first.", "warning");
       return;
     }
     const newNote = { text: noteInput, createdAt: new Date().toISOString() };
     setNotes((prev) => [...prev, newNote]);
     setNoteInput("");
+    showSnackbar("Note added to draft.", "success");
   };
 
   const removeNote = (index) => {
@@ -203,8 +222,16 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
 
   const submitEdit = async () => {
     try {
+      const auth = getAuth(app);
+      const user = auth.currentUser;
+      if (!user) {
+        showSnackbar("Not authenticated — please login.", "error");
+        return;
+      }
+
       const db = getDatabase(app);
-      const userRef = ref(db, `users/${cardId}`);
+      // Save to user-scoped path: users/{uid}/jobs/{cardId}
+      const userRef = ref(db, `users/${user.uid}/jobs/${cardId}`);
 
       const contactsObj = contacts.reduce((acc, item, index) => {
         acc[`contact_${index + 1}`] = item;
@@ -238,10 +265,11 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
       };
 
       await update(userRef, payload);
+      showSnackbar("Record updated successfully.", "success");
       onClose();
     } catch (err) {
       console.error("Update failed:", err);
-      alert("Failed to update — check console for details.");
+      showSnackbar("Failed to update — check console for details.", "error");
     }
   };
 
@@ -255,301 +283,285 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogContent>
-        {/* JOB INFO SECTION */}
-        <Stack spacing={2} margin={4}>
-          <DialogContentText color={"blue"}>Job Info Section</DialogContentText>
-          <div className="flex flex-row justify-between gap-4">
-            <TextField
-              name="companyName"
-              label="Company Name"
-              variant="standard"
-              value={cardData.companyName}
-              onChange={handleChange}
-              required
-            />
-            <TextField
-              name="jobTitle"
-              label="Job Title"
-              variant="standard"
-              value={cardData.jobTitle}
-              onChange={handleChange}
-              required
-            />
-          </div>
+    <>
+      <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+        <DialogContent>
+          {/* JOB INFO SECTION */}
+          <Stack spacing={2} margin={4}>
+            <DialogContentText color={"blue"}>Job Info Section</DialogContentText>
+            <div className="flex flex-row justify-between gap-4">
+              <TextField
+                name="companyName"
+                label="Company Name"
+                variant="standard"
+                value={cardData.companyName}
+                onChange={handleChange}
+                required
+              />
+              <TextField
+                name="jobTitle"
+                label="Job Title"
+                variant="standard"
+                value={cardData.jobTitle}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-          <div className="flex flex-row justify-between gap-4">
-            <TextField
-              name="link"
-              label="Link"
-              variant="standard"
-              value={cardData.link}
-              onChange={handleChange}
-            />
-            <TextField
-              name="location"
-              label="Location"
-              variant="standard"
-              value={cardData.location}
-              onChange={handleChange}
-            />
-          </div>
+            <div className="flex flex-row justify-between gap-4">
+              <TextField
+                name="link"
+                label="Link"
+                variant="standard"
+                value={cardData.link}
+                onChange={handleChange}
+              />
+              <TextField
+                name="location"
+                label="Location"
+                variant="standard"
+                value={cardData.location}
+                onChange={handleChange}
+              />
+            </div>
 
-          <div className="flex flex-row gap-20 items-center">
-            <TextField
-              name="salary"
-              label="Salary"
-              variant="standard"
-              value={cardData.salary}
-              onChange={handleChange}
-            />
+            <div className="flex flex-row gap-20 items-center">
+              <TextField
+                name="salary"
+                label="Salary"
+                variant="standard"
+                value={cardData.salary}
+                onChange={handleChange}
+              />
 
-            <TextField
-              select
-              name="status"
-              label="Status"
-              value={cardData.status}
-              onChange={handleChange}
-              variant="standard"
-              helperText="Current status"
-              sx={{ flex: 1 }}
-            >
-              {currencies.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-          </div>
-
-          <Textarea
-            minRows={8}
-            placeholder="Job Description"
-            name="jobDescription"
-            value={cardData.jobDescription}
-            onChange={handleChange}
-          />
-        </Stack>
-
-        {/* CONTACTS SECTION */}
-        <Stack spacing={2} margin={4}>
-          <DialogContentText color={"blue"}>Contacts Section</DialogContentText>
-          <div className="flex flex-row justify-between gap-4">
-            <TextField
-              name="fullName"
-              label="Full Name"
-              variant="standard"
-              value={contactInput.fullName}
-              onChange={handleContactChange}
-            />
-            <TextField
-              name="jobTitle"
-              label="Job Title"
-              variant="standard"
-              value={contactInput.jobTitle}
-              onChange={handleContactChange}
-            />
-          </div>
-
-          <div className="flex flex-row justify-between gap-4">
-            <TextField
-              name="phoneNumber"
-              label="Phone"
-              variant="standard"
-              value={contactInput.phoneNumber}
-              onChange={handleContactChange}
-            />
-            <TextField
-              name="emailAddress"
-              label="Email"
-              variant="standard"
-              value={contactInput.emailAddress}
-              onChange={handleContactChange}
-            />
-          </div>
-
-          <div className="flex flex-row justify-between gap-4">
-            <TextField
-              name="linkedin"
-              label="LinkedIn"
-              variant="standard"
-              value={contactInput.linkedin}
-              onChange={handleContactChange}
-            />
-            <TextField
-              name="website"
-              label="Website"
-              variant="standard"
-              value={contactInput.website}
-              onChange={handleContactChange}
-            />
-          </div>
-
-          <Button variant="contained" color="primary" onClick={addContact}>
-            Add Contact
-          </Button>
-
-          {contacts.length > 0 && (
-            <Box sx={{ mt: 2 }}>
-              <DialogContentText color="gray">Saved Contacts</DialogContentText>
-              {contacts.map((contact, i) => (
-                <Box
-                  key={i}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    border: "1px solid #e0e0e0",
-                    borderRadius: 1,
-                    p: 1,
-                  }}
-                >
-                  <span>
-                    <strong>{contact.fullName}</strong> — {contact.jobTitle}
-                    <div style={{ fontSize: 12, color: "#777" }}>
-                      📞 {contact.phoneNumber} | ✉️ {contact.emailAddress}
-                    </div>
-                    {contact.linkedin && (
-                      <div style={{ fontSize: 12, color: "#777" }}>
-                        🔗 {contact.linkedin}
-                      </div>
-                    )}
-                  </span>
-                  <IconButton size="small" onClick={() => removeContact(i)}>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              ))}
-            </Box>
-          )}
-        </Stack>
-
-        {/* TASKS SECTION */}
-        <Stack spacing={2} margin={4}>
-          <DialogContentText color={"blue"}>Tasks Section</DialogContentText>
-          <div className="flex flex-row justify-between">
-            <TextField
-              fullWidth
-              variant="standard"
-              label="Task"
-              value={taskInput}
-              onChange={(e) => setTaskInput(e.target.value)}
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ ml: 2 }}
-              onClick={addTask}
-            >
-              Add
-            </Button>
-          </div>
-
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
-            {taskSuggestions.map((sug) => (
-              <Button
-                key={sug}
-                variant="outlined"
-                size="small"
-                onClick={() => applySuggestion(sug)}
+              <TextField
+                select
+                name="status"
+                label="Status"
+                value={cardData.status}
+                onChange={handleChange}
+                variant="standard"
+                helperText="Current status"
+                sx={{ flex: 1 }}
               >
-                {sug}
-              </Button>
-            ))}
-          </Box>
+                {currencies.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </div>
 
-          {tasks.length > 0 && (
-            <Box sx={{ mt: 2 }}>
-              <DialogContentText color="gray">Draft Tasks</DialogContentText>
-              {tasks.map((task, i) => (
-                <Box
-                  key={i}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    border: "1px solid #e0e0e0",
-                    borderRadius: 1,
-                    p: 1,
-                  }}
-                >
-                  <span>
-                    {task.text}
-                    <div style={{ fontSize: 12, color: "#777" }}>
-                      {formatDate(task.createdAt)}
-                    </div>
-                  </span>
-                  <IconButton size="small" onClick={() => removeTask(i)}>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-              ))}
-            </Box>
-          )}
-        </Stack>
-
-        {/* NOTES SECTION */}
-        <Stack spacing={2} margin={4}>
-          <DialogContentText color={"blue"}>Notes Section</DialogContentText>
-          <div className="flex flex-row justify-between">
-            <TextField
-              fullWidth
-              variant="standard"
-              label="Note"
-              value={noteInput}
-              onChange={(e) => setNoteInput(e.target.value)}
+            <Textarea
+              minRows={8}
+              placeholder="Job Description"
+              name="jobDescription"
+              value={cardData.jobDescription}
+              onChange={handleChange}
             />
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ ml: 2 }}
-              onClick={addNote}
-            >
-              Add
-            </Button>
-          </div>
+          </Stack>
 
-          {notes.length > 0 && (
-            <Box sx={{ mt: 2 }}>
-              <DialogContentText color="gray">Draft Notes</DialogContentText>
-              {notes.map((note, i) => (
-                <Box
-                  key={i}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    border: "1px solid #e0e0e0",
-                    borderRadius: 1,
-                    p: 1,
-                  }}
-                >
-                  <span>
-                    {note.text}
-                    <div style={{ fontSize: 12, color: "#777" }}>
-                      {formatDate(note.createdAt)}
-                    </div>
-                  </span>
-                  <IconButton size="small" onClick={() => removeNote(i)}>
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
-                </Box>
+          {/* CONTACTS SECTION */}
+          <Stack spacing={2} margin={4}>
+            <DialogContentText color={"blue"}>Contacts Section</DialogContentText>
+            <div className="flex flex-row justify-between gap-4">
+              <TextField
+                name="fullName"
+                label="Full Name"
+                variant="standard"
+                value={contactInput.fullName}
+                onChange={handleContactChange}
+              />
+              <TextField
+                name="jobTitle"
+                label="Job Title"
+                variant="standard"
+                value={contactInput.jobTitle}
+                onChange={handleContactChange}
+              />
+            </div>
+
+            <div className="flex flex-row justify-between gap-4">
+              <TextField
+                name="phoneNumber"
+                label="Phone"
+                variant="standard"
+                value={contactInput.phoneNumber}
+                onChange={handleContactChange}
+              />
+              <TextField
+                name="emailAddress"
+                label="Email"
+                variant="standard"
+                value={contactInput.emailAddress}
+                onChange={handleContactChange}
+              />
+            </div>
+
+            <div className="flex flex-row justify-between gap-4">
+              <TextField
+                name="linkedin"
+                label="LinkedIn"
+                variant="standard"
+                value={contactInput.linkedin}
+                onChange={handleContactChange}
+              />
+              <TextField
+                name="website"
+                label="Website"
+                variant="standard"
+                value={contactInput.website}
+                onChange={handleContactChange}
+              />
+            </div>
+
+            <Button variant="contained" color="primary" onClick={addContact}>
+              Add Contact
+            </Button>
+
+            {contacts.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <DialogContentText color="gray">Saved Contacts</DialogContentText>
+                {contacts.map((contact, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: 1,
+                      p: 1,
+                    }}
+                  >
+                    <span>
+                      <strong>{contact.fullName}</strong> — {contact.jobTitle}
+                      <div style={{ fontSize: 12, color: "#777" }}>
+                        📞 {contact.phoneNumber} | ✉️ {contact.emailAddress}
+                      </div>
+                      {contact.linkedin && (
+                        <div style={{ fontSize: 12, color: "#777" }}>
+                          🔗 {contact.linkedin}
+                        </div>
+                      )}
+                    </span>
+                    <IconButton size="small" onClick={() => removeContact(i)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Stack>
+
+          {/* TASKS SECTION */}
+          <Stack spacing={2} margin={4}>
+            <DialogContentText color={"blue"}>Tasks Section</DialogContentText>
+            <div className="flex flex-row justify-between">
+              <TextField
+                fullWidth
+                variant="standard"
+                label="Task"
+                value={taskInput}
+                onChange={(e) => setTaskInput(e.target.value)}
+              />
+              <Button variant="contained" color="primary" sx={{ ml: 2 }} onClick={addTask}>
+                Add
+              </Button>
+            </div>
+
+            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1 }}>
+              {taskSuggestions.map((sug) => (
+                <Button key={sug} variant="outlined" size="small" onClick={() => applySuggestion(sug)}>
+                  {sug}
+                </Button>
               ))}
             </Box>
-          )}
-        </Stack>
-      </DialogContent>
 
-      <DialogActions>
-        <Button onClick={onClose} color="error" variant="contained">
-          Cancel
-        </Button>
-        <Button onClick={submitEdit} color="primary" variant="contained">
-          Update
-        </Button>
-      </DialogActions>
-    </Dialog>
+            {tasks.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <DialogContentText color="gray">Draft Tasks</DialogContentText>
+                {tasks.map((task, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: 1,
+                      p: 1,
+                    }}
+                  >
+                    <span>
+                      {task.text}
+                      <div style={{ fontSize: 12, color: "#777" }}>{formatDate(task.createdAt)}</div>
+                    </span>
+                    <IconButton size="small" onClick={() => removeTask(i)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Stack>
+
+          {/* NOTES SECTION */}
+          <Stack spacing={2} margin={4}>
+            <DialogContentText color={"blue"}>Notes Section</DialogContentText>
+            <div className="flex flex-row justify-between">
+              <TextField fullWidth variant="standard" label="Note" value={noteInput} onChange={(e) => setNoteInput(e.target.value)} />
+              <Button variant="contained" color="primary" sx={{ ml: 2 }} onClick={addNote}>
+                Add
+              </Button>
+            </div>
+
+            {notes.length > 0 && (
+              <Box sx={{ mt: 2 }}>
+                <DialogContentText color="gray">Draft Notes</DialogContentText>
+                {notes.map((note, i) => (
+                  <Box
+                    key={i}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: 1,
+                      p: 1,
+                    }}
+                  >
+                    <span>
+                      {note.text}
+                      <div style={{ fontSize: 12, color: "#777" }}>{formatDate(note.createdAt)}</div>
+                    </span>
+                    <IconButton size="small" onClick={() => removeNote(i)}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Stack>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={onClose} color="error" variant="contained">
+            Cancel
+          </Button>
+          <Button onClick={submitEdit} color="primary" variant="contained">
+            Update
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar */}
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={closeSnackbar} anchorOrigin={{ vertical: "top", horizontal: "right" }}>
+        <Alert onClose={closeSnackbar} severity={snackbar.severity} variant="filled" sx={{ width: "100%" }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 
