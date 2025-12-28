@@ -221,6 +221,15 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
   };
 
   const submitEdit = async () => {
+
+    const { companyName, jobTitle, link, location, salary, status, jobDescription } = cardData;
+
+    if (!companyName || !jobTitle || !link || !location || !salary || !status || !jobDescription) {
+      showSnackbar("Please fill all required fields before saving.", "error");
+      return;
+    }
+
+
     try {
       const auth = getAuth(app);
       const user = auth.currentUser;
@@ -315,6 +324,7 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
                 variant="standard"
                 value={cardData.link}
                 onChange={handleChange}
+                required
               />
               <TextField
                 name="location"
@@ -322,6 +332,7 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
                 variant="standard"
                 value={cardData.location}
                 onChange={handleChange}
+                required
               />
             </div>
 
@@ -332,6 +343,7 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
                 variant="standard"
                 value={cardData.salary}
                 onChange={handleChange}
+                required
               />
 
               <TextField
@@ -343,6 +355,7 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
                 variant="standard"
                 helperText="Current status"
                 sx={{ flex: 1 }}
+                required
               >
                 {currencies.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
@@ -354,10 +367,11 @@ const EditModal = ({ open, onClose, initialData, cardId }) => {
 
             <Textarea
               minRows={8}
-              placeholder="Job Description"
+              placeholder="Job Description *"
               name="jobDescription"
               value={cardData.jobDescription}
               onChange={handleChange}
+              required
             />
           </Stack>
 

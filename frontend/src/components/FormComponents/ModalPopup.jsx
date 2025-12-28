@@ -206,6 +206,13 @@ const Modalpopup = () => {
   const submitForm = async (e) => {
     e.preventDefault();
 
+    const { companyName, jobTitle, link, location, salary, status, jobDescription } = cardData;
+
+    if (!companyName || !jobTitle || !link || !location || !salary || !status || !jobDescription) {
+      showSnackbar("Please fill all required fields before saving.", "error");
+      return;
+    }
+
     const db = getDatabase(app);
     const auth = getAuth(app); // 🟢 Get Firebase Auth
     const user = auth.currentUser;
@@ -356,7 +363,7 @@ const Modalpopup = () => {
 
             <Textarea
               minRows={8}
-              placeholder="Job Description"
+              placeholder="Job Description *"
               name="jobDescription"
               value={cardData.jobDescription}
               onChange={handleChange}
